@@ -2,209 +2,279 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Семейное древо Мелетяновых</title>
 
 <style>
-    * {
-        box-sizing: border-box;
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #eeeae1;
+    color: #2f302c;
+}
+
+#app {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+#topbar {
+    position: fixed;
+    z-index: 20;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(960px, calc(100% - 28px));
+    min-height: 66px;
+    padding: 10px 14px;
+    border-radius: 18px;
+    background: rgba(255,255,255,.94);
+    box-shadow: 0 8px 30px rgba(0,0,0,.15);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    backdrop-filter: blur(10px);
+}
+
+.brand {
+    min-width: 0;
+}
+
+.brand h1 {
+    margin: 0;
+    font-size: 20px;
+    line-height: 1.15;
+}
+
+.brand p {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: #73736d;
+}
+
+.controls {
+    display: flex;
+    gap: 7px;
+    flex-shrink: 0;
+}
+
+.control {
+    width: 42px;
+    height: 42px;
+    border: 0;
+    border-radius: 12px;
+    background: #f5f3ee;
+    color: #33352f;
+    font-size: 22px;
+    cursor: pointer;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.05);
+}
+
+.control:hover {
+    background: #e9e6de;
+}
+
+.control:active {
+    transform: scale(.95);
+}
+
+#viewer {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    cursor: grab;
+    touch-action: none;
+    background:
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,.95), rgba(228,223,212,.96));
+}
+
+#viewer.dragging {
+    cursor: grabbing;
+}
+
+#canvas {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform-origin: center center;
+    will-change: transform;
+}
+
+#tree {
+    display: block;
+    max-width: none;
+    max-height: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
+}
+
+#hint {
+    position: fixed;
+    z-index: 15;
+    left: 50%;
+    bottom: 16px;
+    transform: translateX(-50%);
+    padding: 9px 14px;
+    border-radius: 12px;
+    background: rgba(255,255,255,.88);
+    color: #66675f;
+    font-size: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,.12);
+    text-align: center;
+    pointer-events: none;
+    transition: opacity .5s;
+}
+
+#zoom {
+    position: fixed;
+    z-index: 15;
+    right: 16px;
+    bottom: 16px;
+    padding: 8px 11px;
+    border-radius: 10px;
+    background: rgba(255,255,255,.88);
+    color: #66675f;
+    font-size: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,.12);
+    pointer-events: none;
+}
+
+#loading {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eeeae1;
+    transition: opacity .4s;
+}
+
+.loading-box {
+    text-align: center;
+    background: rgba(255,255,255,.94);
+    padding: 25px 32px;
+    border-radius: 18px;
+    box-shadow: 0 10px 35px rgba(0,0,0,.14);
+}
+
+.loading-box .tree-icon {
+    font-size: 38px;
+}
+
+.loading-box div:last-child {
+    margin-top: 8px;
+    color: #666;
+}
+
+@media (max-width: 650px) {
+    #topbar {
+        top: 8px;
+        width: calc(100% - 16px);
+        min-height: 58px;
+        padding: 8px 9px;
+        border-radius: 15px;
     }
 
-    html, body {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        font-family: Arial, sans-serif;
-        background: #f3f0e8;
+    .brand h1 {
+        font-size: 16px;
     }
 
-    #header {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 70px;
-        z-index: 1000;
-        background: rgba(255,255,255,0.95);
-        box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 20px;
+    .brand p {
+        display: none;
     }
 
-    #title {
-        font-size: 24px;
-        font-weight: bold;
-        color: #333;
+    .control {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        font-size: 19px;
     }
 
-    #subtitle {
-        font-size: 13px;
-        color: #777;
-        margin-top: 3px;
+    #hint {
+        bottom: 10px;
+        max-width: calc(100% - 100px);
+        font-size: 11px;
     }
 
-    #buttons {
-        display: flex;
-        gap: 8px;
+    #zoom {
+        right: 10px;
+        bottom: 10px;
+        font-size: 11px;
     }
-
-    button {
-        width: 42px;
-        height: 42px;
-        border: none;
-        border-radius: 8px;
-        background: #ffffff;
-        box-shadow: 0 2px 7px rgba(0,0,0,0.18);
-        font-size: 23px;
-        cursor: pointer;
-        color: #333;
-    }
-
-    button:hover {
-        background: #eeeeee;
-    }
-
-    #viewer {
-        position: fixed;
-        top: 70px;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        overflow: hidden;
-        cursor: grab;
-        background:
-            radial-gradient(circle at center, #ffffff 0%, #e9e4d8 100%);
-        touch-action: none;
-    }
-
-    #viewer.dragging {
-        cursor: grabbing;
-    }
-
-    #canvas {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform-origin: center center;
-        will-change: transform;
-    }
-
-    #tree {
-        display: block;
-        max-width: none;
-        max-height: none;
-        user-select: none;
-        -webkit-user-drag: none;
-        pointer-events: none;
-    }
-
-    #help {
-        position: fixed;
-        left: 15px;
-        bottom: 15px;
-        z-index: 1000;
-        padding: 9px 13px;
-        background: rgba(255,255,255,0.9);
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        font-size: 13px;
-        color: #555;
-    }
-
-    #zoomLevel {
-        position: fixed;
-        right: 15px;
-        bottom: 15px;
-        z-index: 1000;
-        padding: 9px 13px;
-        background: rgba(255,255,255,0.9);
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        font-size: 13px;
-        color: #555;
-    }
-
-    @media (max-width: 700px) {
-        #header {
-            height: 60px;
-            padding: 0 10px;
-        }
-
-        #title {
-            font-size: 17px;
-        }
-
-        #subtitle {
-            display: none;
-        }
-
-        #viewer {
-            top: 60px;
-        }
-
-        button {
-            width: 38px;
-            height: 38px;
-        }
-
-        #help {
-            display: none;
-        }
-    }
+}
 </style>
 </head>
 
 <body>
 
-<header id="header">
-    <div>
-        <div id="title">🌳 Семейное древо Мелетяновых</div>
-        <div id="subtitle">История семьи, которую мы сохраняем для будущих поколений</div>
+<div id="app">
+
+    <div id="loading">
+        <div class="loading-box">
+            <div class="tree-icon">🌳</div>
+            <div>Загружаем семейное древо…</div>
+        </div>
     </div>
 
-    <div id="buttons">
-        <button id="zoomOut" title="Уменьшить">−</button>
-        <button id="reset" title="Вернуть исходный вид">⌂</button>
-        <button id="zoomIn" title="Увеличить">+</button>
+    <header id="topbar">
+        <div class="brand">
+            <h1>🌳 Семейное древо Мелетяновых</h1>
+            <p>История семьи, которую мы сохраняем для будущих поколений</p>
+        </div>
+
+        <div class="controls">
+            <button class="control" id="minus" title="Уменьшить">−</button>
+            <button class="control" id="home" title="Показать всё дерево">⌂</button>
+            <button class="control" id="plus" title="Увеличить">+</button>
+            <button class="control" id="fullscreen" title="Полный экран">⛶</button>
+        </div>
+    </header>
+
+    <main id="viewer">
+        <div id="canvas">
+            <img
+                id="tree"
+                src="meletyan-tree.png"
+                alt="Семейное древо Мелетяновых"
+                draggable="false"
+            >
+        </div>
+    </main>
+
+    <div id="hint">
+        🖱️ Перетаскивайте дерево • Колесо мыши — масштаб • На телефоне — щипок двумя пальцами
     </div>
-</header>
 
-<main id="viewer">
+    <div id="zoom">100%</div>
 
-    <div id="canvas">
-        <img
-            id="tree"
-            src="meletyan-tree.png"
-            alt="Семейное древо Мелетяновых"
-            draggable="false"
-        >
-    </div>
-
-</main>
-
-<div id="help">
-    🖱️ Перетаскивайте древо мышкой • Колесо мыши — масштаб
-</div>
-
-<div id="zoomLevel">
-    100%
 </div>
 
 <script>
 
-const viewer = document.getElementById("viewer");
-const canvas = document.getElementById("canvas");
-const tree = document.getElementById("tree");
-const zoomLevel = document.getElementById("zoomLevel");
+const viewer = document.getElementById('viewer');
+const canvas = document.getElementById('canvas');
+const tree = document.getElementById('tree');
+const zoomText = document.getElementById('zoom');
+const loading = document.getElementById('loading');
+const hint = document.getElementById('hint');
 
 let scale = 1;
 let x = 0;
 let y = 0;
+
+let minScale = 0.01;
+const maxScale = 8;
+
+let pointers = new Map();
 
 let dragging = false;
 let startX = 0;
@@ -212,14 +282,17 @@ let startY = 0;
 let startPanX = 0;
 let startPanY = 0;
 
-let minScale = 0.01;
-let maxScale = 8;
+let pinchStartDistance = 0;
+let pinchStartScale = 1;
+let pinchStartCenter = null;
 
 function update() {
+
     canvas.style.transform =
         `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(${scale})`;
 
-    zoomLevel.textContent = Math.round(scale * 100) + "%";
+    zoomText.textContent =
+        Math.round(scale * 100) + '%';
 }
 
 function fitToScreen() {
@@ -228,18 +301,15 @@ function fitToScreen() {
         return;
     }
 
-    const viewerWidth = viewer.clientWidth;
-    const viewerHeight = viewer.clientHeight;
+    const vw = viewer.clientWidth;
+    const vh = viewer.clientHeight;
 
-    const imageWidth = tree.naturalWidth;
-    const imageHeight = tree.naturalHeight;
+    const sx = vw / tree.naturalWidth;
+    const sy = vh / tree.naturalHeight;
 
-    const scaleX = viewerWidth / imageWidth;
-    const scaleY = viewerHeight / imageHeight;
+    scale = Math.min(sx, sy) * 0.94;
 
-    scale = Math.min(scaleX, scaleY) * 0.92;
-
-    minScale = scale * 0.5;
+    minScale = Math.max(scale * 0.45, 0.001);
 
     x = 0;
     y = 0;
@@ -247,125 +317,215 @@ function fitToScreen() {
     update();
 }
 
-tree.addEventListener("load", function() {
-    fitToScreen();
-});
-
-window.addEventListener("resize", function() {
-    fitToScreen();
-});
-
-function zoomAt(newScale, mouseX, mouseY) {
-
-    newScale = Math.max(minScale, Math.min(maxScale, newScale));
+function zoomAt(newScale, clientX, clientY) {
 
     const rect = viewer.getBoundingClientRect();
 
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
+    const mx =
+        clientX - rect.left - rect.width / 2;
 
-    const relativeX = mouseX - centerX;
-    const relativeY = mouseY - centerY;
+    const my =
+        clientY - rect.top - rect.height / 2;
+
+    newScale =
+        Math.max(minScale, Math.min(maxScale, newScale));
 
     const factor = newScale / scale;
 
-    x = relativeX - (relativeX - x) * factor;
-    y = relativeY - (relativeY - y) * factor;
+    x = mx - (mx - x) * factor;
+    y = my - (my - y) * factor;
 
     scale = newScale;
 
     update();
 }
 
-viewer.addEventListener("wheel", function(event) {
+function distance(a, b) {
 
-    event.preventDefault();
+    return Math.hypot(
+        a.clientX - b.clientX,
+        a.clientY - b.clientY
+    );
+}
 
-    const rect = viewer.getBoundingClientRect();
+function center(a, b) {
 
-    const mouseX = event.clientX - rect.left;
-    const mouseY = event.clientY - rect.top;
+    return {
+        x: (a.clientX + b.clientX) / 2,
+        y: (a.clientY + b.clientY) / 2
+    };
+}
 
-    const zoomFactor = event.deltaY < 0 ? 1.15 : 0.87;
+tree.addEventListener('load', function() {
 
-    zoomAt(scale * zoomFactor, mouseX, mouseY);
+    fitToScreen();
+
+    loading.style.opacity = '0';
+
+    setTimeout(function() {
+        loading.remove();
+    }, 450);
+});
+
+viewer.addEventListener('wheel', function(e) {
+
+    e.preventDefault();
+
+    zoomAt(
+        scale * (e.deltaY < 0 ? 1.15 : 0.87),
+        e.clientX,
+        e.clientY
+    );
 
 }, { passive: false });
 
-viewer.addEventListener("pointerdown", function(event) {
+viewer.addEventListener('pointerdown', function(e) {
 
-    dragging = true;
+    pointers.set(e.pointerId, e);
 
-    viewer.classList.add("dragging");
+    try {
+        viewer.setPointerCapture(e.pointerId);
+    } catch (_) {}
 
-    startX = event.clientX;
-    startY = event.clientY;
+    if (pointers.size === 1) {
 
-    startPanX = x;
-    startPanY = y;
+        dragging = true;
 
-    viewer.setPointerCapture(event.pointerId);
+        viewer.classList.add('dragging');
+
+        startX = e.clientX;
+        startY = e.clientY;
+
+        startPanX = x;
+        startPanY = y;
+
+    } else if (pointers.size === 2) {
+
+        const [a, b] = [...pointers.values()];
+
+        pinchStartDistance = distance(a, b);
+
+        pinchStartScale = scale;
+
+        pinchStartCenter = center(a, b);
+
+        dragging = false;
+    }
 });
 
-viewer.addEventListener("pointermove", function(event) {
+viewer.addEventListener('pointermove', function(e) {
 
-    if (!dragging) {
+    if (!pointers.has(e.pointerId)) {
         return;
     }
 
-    x = startPanX + (event.clientX - startX);
-    y = startPanY + (event.clientY - startY);
+    pointers.set(e.pointerId, e);
 
-    update();
+    if (pointers.size === 1 && dragging) {
+
+        x =
+            startPanX +
+            e.clientX -
+            startX;
+
+        y =
+            startPanY +
+            e.clientY -
+            startY;
+
+        update();
+    }
+
+    if (pointers.size === 2) {
+
+        const [a, b] = [...pointers.values()];
+
+        const d = distance(a, b);
+
+        if (pinchStartDistance > 0) {
+
+            const newScale =
+                pinchStartScale *
+                (d / pinchStartDistance);
+
+            zoomAt(
+                newScale,
+                pinchStartCenter.x,
+                pinchStartCenter.y
+            );
+        }
+    }
 });
 
-viewer.addEventListener("pointerup", function(event) {
+function endPointer(e) {
 
-    dragging = false;
+    pointers.delete(e.pointerId);
 
-    viewer.classList.remove("dragging");
+    if (pointers.size === 0) {
 
-    try {
-        viewer.releasePointerCapture(event.pointerId);
-    } catch(e) {}
-});
+        dragging = false;
 
-viewer.addEventListener("pointercancel", function() {
+        viewer.classList.remove('dragging');
+    }
 
-    dragging = false;
+    if (pointers.size < 2) {
+        pinchStartDistance = 0;
+    }
+}
 
-    viewer.classList.remove("dragging");
-});
+viewer.addEventListener('pointerup', endPointer);
+viewer.addEventListener('pointercancel', endPointer);
 
-document.getElementById("zoomIn").addEventListener("click", function() {
+document.getElementById('plus').addEventListener('click', function() {
 
     zoomAt(
         scale * 1.5,
         viewer.clientWidth / 2,
         viewer.clientHeight / 2
     );
-
 });
 
-document.getElementById("zoomOut").addEventListener("click", function() {
+document.getElementById('minus').addEventListener('click', function() {
 
     zoomAt(
         scale / 1.5,
         viewer.clientWidth / 2,
         viewer.clientHeight / 2
     );
-
 });
 
-document.getElementById("reset").addEventListener("click", function() {
+document.getElementById('home').addEventListener('click', function() {
 
     fitToScreen();
-
 });
 
-document.addEventListener("keydown", function(event) {
+document.getElementById('fullscreen').addEventListener('click', async function() {
 
-    if (event.key === "+" || event.key === "=") {
+    try {
+
+        if (!document.fullscreenElement) {
+
+            await document.documentElement.requestFullscreen();
+
+        } else {
+
+            await document.exitFullscreen();
+        }
+
+    } catch (_) {}
+});
+
+document.addEventListener('fullscreenchange', function() {
+
+    document.getElementById('fullscreen').textContent =
+        document.fullscreenElement ? '⤢' : '⛶';
+
+    setTimeout(fitToScreen, 100);
+});
+
+document.addEventListener('keydown', function(e) {
+
+    if (e.key === '+' || e.key === '=') {
 
         zoomAt(
             scale * 1.2,
@@ -373,9 +533,7 @@ document.addEventListener("keydown", function(event) {
             viewer.clientHeight / 2
         );
 
-    }
-
-    if (event.key === "-" || event.key === "_") {
+    } else if (e.key === '-' || e.key === '_') {
 
         zoomAt(
             scale / 1.2,
@@ -383,15 +541,19 @@ document.addEventListener("keydown", function(event) {
             viewer.clientHeight / 2
         );
 
-    }
-
-    if (event.key === "0") {
+    } else if (e.key === '0' || e.key === 'Home') {
 
         fitToScreen();
+    }
+});
 
+setTimeout(function() {
+
+    if (hint) {
+        hint.style.opacity = '0.25';
     }
 
-});
+}, 8000);
 
 </script>
 
