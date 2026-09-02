@@ -2,770 +2,694 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Семейное древо Мелетяновых</title>
 
 <style>
+
 * {
     box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
     margin: 0;
-    padding: 0;
     width: 100%;
     height: 100%;
     overflow: hidden;
     font-family: Arial, Helvetica, sans-serif;
-    background: #eef1ea;
-    color: #263126;
+    background: #eef1ed;
+    color: #24352b;
 }
 
-#app {
-    position: fixed;
-    inset: 0;
-    overflow: hidden;
-}
-
-/* Верхняя панель */
+/* ===== ВЕРХНЯЯ ПАНЕЛЬ ===== */
 
 #topbar {
     position: fixed;
-    top: 14px;
+    z-index: 1000;
+    top: 18px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 100;
-    
-    width: min(900px, calc(100% - 30px));
-    
-    background: rgba(255,255,255,0.94);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    
-    border-radius: 20px;
-    padding: 13px 18px;
-    
+
+    width: min(94%, 900px);
+
+    padding: 14px 20px;
+
+    border-radius: 18px;
+
+    background: rgba(255,255,255,0.92);
+
     box-shadow:
         0 8px 30px rgba(0,0,0,0.12),
         0 2px 8px rgba(0,0,0,0.08);
-    
+
+    backdrop-filter: blur(12px);
+
     display: flex;
     align-items: center;
     justify-content: space-between;
+
     gap: 15px;
 }
 
-.title-area {
+.title {
     min-width: 0;
 }
 
-.title {
+.title h1 {
+    margin: 0;
+
     font-size: 21px;
     font-weight: 700;
+
+    color: #244b32;
+
     white-space: nowrap;
 }
 
-.subtitle {
-    margin-top: 3px;
+.title p {
+    margin: 4px 0 0;
+
     font-size: 12px;
-    color: #6b746b;
+
+    color: #718078;
+
     white-space: nowrap;
 }
 
-/* Кнопки */
+/* ===== КНОПКИ ===== */
 
 .controls {
     display: flex;
-    align-items: center;
     gap: 7px;
     flex-shrink: 0;
 }
 
 button {
-    width: 40px;
-    height: 40px;
-    border: 0;
+    width: 42px;
+    height: 42px;
+
+    border: none;
     border-radius: 12px;
-    
-    background: #f0f3ef;
-    color: #263126;
-    
+
+    background: #f2f5f2;
+
+    color: #31563e;
+
     font-size: 21px;
-    font-weight: 600;
-    
+
     cursor: pointer;
-    
-    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-    
+
     transition:
         transform 0.15s,
-        background 0.15s;
+        background 0.15s,
+        box-shadow 0.15s;
 }
 
 button:hover {
-    background: #e1e7df;
+    background: #e2ebe4;
+
     transform: translateY(-1px);
+
+    box-shadow: 0 4px 12px rgba(0,0,0,0.10);
 }
 
 button:active {
     transform: scale(0.94);
 }
 
-#homeBtn {
-    font-size: 18px;
-}
+/* ===== ОБЛАСТЬ ДЕРЕВА ===== */
 
-#fullscreenBtn {
-    font-size: 17px;
-}
+#viewer {
+    position: fixed;
 
-/* Область дерева */
+    left: 0;
+    top: 0;
 
-#viewport {
-    position: absolute;
-    inset: 0;
+    width: 100%;
+    height: 100%;
+
     overflow: hidden;
-    
+
     cursor: grab;
-    
+
     touch-action: none;
-    
+
     background:
         radial-gradient(circle at center,
-            rgba(255,255,255,0.75) 0%,
-            rgba(238,241,234,0.95) 65%,
-            #e8ece5 100%);
+            #f8faf8 0%,
+            #eef2ee 60%,
+            #e6ebe6 100%);
 }
 
-#viewport.dragging {
+#viewer.dragging {
     cursor: grabbing;
 }
 
-/* Само дерево */
+/* ===== КАРТИНКА ===== */
 
 #tree {
     position: absolute;
+
     left: 0;
     top: 0;
-    
+
     max-width: none;
-    width: auto;
-    height: auto;
-    
+    max-height: none;
+
     user-select: none;
     -webkit-user-drag: none;
-    
+
     transform-origin: 0 0;
-    
+
     will-change: transform;
-    
-    box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+
+    box-shadow:
+        0 12px 40px rgba(0,0,0,0.12);
 }
 
-/* Подсказка */
+/* ===== ЦЕНТРАЛЬНАЯ ПОДСКАЗКА ===== */
 
 #hint {
     position: fixed;
-    z-index: 90;
-    
+
+    z-index: 900;
+
     left: 50%;
-    bottom: 17px;
+    bottom: 22px;
+
     transform: translateX(-50%);
-    
-    padding: 9px 15px;
-    
-    border-radius: 12px;
-    
-    background: rgba(255,255,255,0.9);
-    backdrop-filter: blur(8px);
-    
-    color: #687168;
-    font-size: 12px;
-    
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-    
-    pointer-events: none;
-    
-    text-align: center;
-}
 
-/* Индикатор масштаба */
+    padding: 9px 16px;
 
-#zoomLabel {
-    position: fixed;
-    z-index: 90;
-    
-    right: 18px;
-    bottom: 18px;
-    
-    padding: 8px 11px;
-    
-    border-radius: 10px;
-    
+    border-radius: 14px;
+
     background: rgba(255,255,255,0.88);
-    color: #5d665e;
-    
+
+    color: #65736a;
+
     font-size: 12px;
-    
+
+    box-shadow: 0 4px 18px rgba(0,0,0,0.10);
+
+    backdrop-filter: blur(8px);
+
+    pointer-events: none;
+
+    transition: opacity 0.5s;
+}
+
+/* ===== ИНДИКАТОР МАСШТАБА ===== */
+
+#zoomValue {
+    position: fixed;
+
+    z-index: 950;
+
+    right: 18px;
+    bottom: 20px;
+
+    padding: 8px 12px;
+
+    border-radius: 10px;
+
+    background: rgba(255,255,255,0.85);
+
+    color: #53645a;
+
+    font-size: 12px;
+
     box-shadow: 0 3px 12px rgba(0,0,0,0.08);
-    
+
     pointer-events: none;
 }
 
-/* Полноэкранный режим */
-
-:fullscreen #topbar {
-    top: 12px;
-}
-
-:fullscreen #hint {
-    bottom: 15px;
-}
-
-/* Телефон */
+/* ===== МОБИЛЬНАЯ ВЕРСИЯ ===== */
 
 @media (max-width: 700px) {
 
     #topbar {
-        top: 8px;
-        width: calc(100% - 16px);
+        top: 10px;
         padding: 10px 12px;
-        border-radius: 16px;
+        border-radius: 15px;
     }
 
-    .title {
+    .title h1 {
         font-size: 16px;
     }
 
-    .subtitle {
-        font-size: 10px;
+    .title p {
+        display: none;
     }
 
     button {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
+        width: 37px;
+        height: 37px;
+        font-size: 18px;
     }
 
     #hint {
-        bottom: 10px;
-        font-size: 10px;
-        max-width: calc(100% - 30px);
-    }
-
-    #zoomLabel {
-        right: 10px;
-        bottom: 10px;
-        display: none;
+        bottom: 14px;
+        font-size: 11px;
     }
 }
+
 </style>
 </head>
 
 <body>
 
-<div id="app">
+<!-- ВЕРХНЯЯ ПАНЕЛЬ -->
 
-    <div id="viewport">
-        <img
-            id="tree"
-            src="meletyan-tree.png"
-            alt="Семейное древо Мелетяновых"
-            draggable="false"
-        >
+<div id="topbar">
+
+    <div class="title">
+        <h1>🌳 Семейное древо Мелетяновых</h1>
+
+        <p>
+            История семьи, которую мы сохраняем для будущих поколений
+        </p>
     </div>
 
-    <div id="topbar">
+    <div class="controls">
 
-        <div class="title-area">
-            <div class="title">🌳 Семейное древо Мелетяновых</div>
-            <div class="subtitle">
-                История семьи, которую мы сохраняем для будущих поколений
-            </div>
-        </div>
+        <button id="minus" title="Уменьшить">
+            −
+        </button>
 
-        <div class="controls">
+        <button id="fit" title="Показать всё дерево">
+            ⌂
+        </button>
 
-            <button id="minusBtn" title="Уменьшить">
-                −
-            </button>
+        <button id="plus" title="Увеличить">
+            +
+        </button>
 
-            <button id="homeBtn" title="Вернуться к начальной позиции">
-                ⌂
-            </button>
+        <button id="fullscreen" title="Полный экран">
+            ⛶
+        </button>
 
-            <button id="plusBtn" title="Увеличить">
-                +
-            </button>
-
-            <button id="fullscreenBtn" title="Полный экран">
-                ⛶
-            </button>
-
-        </div>
-
-    </div>
-
-    <div id="hint">
-        🖱 Перетаскивайте дерево мышкой · Колесо мыши — масштаб
-    </div>
-
-    <div id="zoomLabel">
-        100%
     </div>
 
 </div>
 
+
+<!-- ОБЛАСТЬ ПРОСМОТРА -->
+
+<div id="viewer">
+
+    <img
+        id="tree"
+        src="meletyan-tree.png"
+        alt="Семейное древо Мелетяновых"
+        draggable="false"
+    >
+
+</div>
+
+
+<!-- ПОДСКАЗКА -->
+
+<div id="hint">
+    🖱 Перетаскивайте дерево мышкой • Колесо мыши — масштаб
+</div>
+
+<div id="zoomValue">
+    100%
+</div>
+
+
 <script>
 
-const viewport = document.getElementById("viewport");
+/* =====================================================
+   НАСТРОЙКИ
+   ===================================================== */
+
+const viewer = document.getElementById("viewer");
 const tree = document.getElementById("tree");
 
-const minusBtn = document.getElementById("minusBtn");
-const plusBtn = document.getElementById("plusBtn");
-const homeBtn = document.getElementById("homeBtn");
-const fullscreenBtn = document.getElementById("fullscreenBtn");
-const zoomLabel = document.getElementById("zoomLabel");
+const plus = document.getElementById("plus");
+const minus = document.getElementById("minus");
+const fit = document.getElementById("fit");
+const fullscreen = document.getElementById("fullscreen");
+
+const zoomValue = document.getElementById("zoomValue");
+const hint = document.getElementById("hint");
+
 
 let scale = 1;
+
 let x = 0;
 let y = 0;
+
+let dragging = false;
+
+let startMouseX = 0;
+let startMouseY = 0;
 
 let startX = 0;
 let startY = 0;
 
-let startPanX = 0;
-let startPanY = 0;
 
-let dragging = false;
+/* =====================================================
+   ОБНОВЛЕНИЕ КАРТИНКИ
+   ===================================================== */
 
-let initialScale = 1;
-let initialX = 0;
-let initialY = 0;
-
-const MIN_SCALE = 0.02;
-const MAX_SCALE = 4;
-
-
-/* --------------------------------
-   Обновление положения дерева
--------------------------------- */
-
-function updateTransform() {
+function update() {
 
     tree.style.transform =
         `translate(${x}px, ${y}px) scale(${scale})`;
 
-    zoomLabel.textContent =
+    zoomValue.textContent =
         Math.round(scale * 100) + "%";
 }
 
 
-/* --------------------------------
-   Центрирование дерева
--------------------------------- */
+/* =====================================================
+   ПОКАЗАТЬ ВСЁ ДЕРЕВО
+   ===================================================== */
 
-function setInitialPosition() {
+function fitTree() {
 
-    const vw = viewport.clientWidth;
-    const vh = viewport.clientHeight;
+    if (!tree.naturalWidth || !tree.naturalHeight) {
+        return;
+    }
+
+    const vw = viewer.clientWidth;
+    const vh = viewer.clientHeight;
 
     const iw = tree.naturalWidth;
     const ih = tree.naturalHeight;
 
-    if (!iw || !ih) return;
 
     /*
-       Показываем дерево по высоте.
-
-       Это намного удобнее, чем
-       уменьшать огромное изображение
-       целиком до маленькой полоски.
+       Подбираем масштаб так,
+       чтобы всё дерево было видно.
     */
 
-    const availableHeight = vh - 130;
+    const scaleX = vw / iw;
+    const scaleY = vh / ih;
 
-    initialScale = availableHeight / ih;
+    scale = Math.min(scaleX, scaleY) * 0.92;
+
 
     /*
-       Ограничиваем стартовый масштаб,
-       чтобы он не стал слишком большим.
+       Центрируем дерево.
     */
 
-    initialScale = Math.max(
-        MIN_SCALE,
-        Math.min(initialScale, 0.45)
-    );
+    const width = iw * scale;
+    const height = ih * scale;
 
-    scale = initialScale;
+    x = (vw - width) / 2;
+    y = (vh - height) / 2;
 
-    /*
-       Центрируем изображение
-       по вертикали.
-    */
 
-    const scaledWidth = iw * scale;
-    const scaledHeight = ih * scale;
-
-    initialX =
-        (vw - scaledWidth) / 2;
-
-    initialY =
-        (vh - scaledHeight) / 2 + 30;
-
-    x = initialX;
-    y = initialY;
-
-    updateTransform();
+    update();
 }
 
 
-/* --------------------------------
-   Кнопка "Домой"
--------------------------------- */
+/* =====================================================
+   ИЗМЕНЕНИЕ МАСШТАБА
+   ===================================================== */
 
-homeBtn.addEventListener("click", () => {
+function changeZoom(amount, centerX, centerY) {
 
-    scale = initialScale;
-    x = initialX;
-    y = initialY;
+    const oldScale = scale;
 
-    updateTransform();
-});
+    scale += amount;
 
+    /*
+       Ограничения масштаба
+    */
 
-/* --------------------------------
-   Увеличение
--------------------------------- */
-
-function zoomAtPoint(newScale, cx, cy) {
-
-    newScale = Math.max(
-        MIN_SCALE,
-        Math.min(MAX_SCALE, newScale)
-    );
-
-    const worldX =
-        (cx - x) / scale;
-
-    const worldY =
-        (cy - y) / scale;
-
-    x =
-        cx - worldX * newScale;
-
-    y =
-        cy - worldY * newScale;
-
-    scale = newScale;
-
-    updateTransform();
-}
+    scale = Math.max(0.005, scale);
+    scale = Math.min(5, scale);
 
 
-plusBtn.addEventListener("click", () => {
+    /*
+       Если передана точка,
+       увеличиваем именно вокруг неё.
+    */
 
-    const rect = viewport.getBoundingClientRect();
+    if (centerX !== undefined && centerY !== undefined) {
 
-    zoomAtPoint(
-        scale * 1.25,
-        rect.width / 2,
-        rect.height / 2
-    );
-});
+        const imageX =
+            (centerX - x) / oldScale;
 
+        const imageY =
+            (centerY - y) / oldScale;
 
-minusBtn.addEventListener("click", () => {
-
-    const rect = viewport.getBoundingClientRect();
-
-    zoomAtPoint(
-        scale / 1.25,
-        rect.width / 2,
-        rect.height / 2
-    );
-});
-
-
-/* --------------------------------
-   Колесо мыши
--------------------------------- */
-
-viewport.addEventListener(
-    "wheel",
-    (event) => {
-
-        event.preventDefault();
-
-        const rect =
-            viewport.getBoundingClientRect();
-
-        const cx =
-            event.clientX - rect.left;
-
-        const cy =
-            event.clientY - rect.top;
-
-        const factor =
-            event.deltaY < 0
-                ? 1.12
-                : 1 / 1.12;
-
-        zoomAtPoint(
-            scale * factor,
-            cx,
-            cy
-        );
-    },
-    { passive: false }
-);
-
-
-/* --------------------------------
-   Перетаскивание мышью
--------------------------------- */
-
-viewport.addEventListener(
-    "mousedown",
-    (event) => {
-
-        if (event.button !== 0) return;
-
-        dragging = true;
-
-        viewport.classList.add("dragging");
-
-        startX = event.clientX;
-        startY = event.clientY;
-
-        startPanX = x;
-        startPanY = y;
-    }
-);
-
-
-window.addEventListener(
-    "mousemove",
-    (event) => {
-
-        if (!dragging) return;
 
         x =
-            startPanX +
-            (event.clientX - startX);
+            centerX -
+            imageX * scale;
 
         y =
-            startPanY +
-            (event.clientY - startY);
-
-        updateTransform();
+            centerY -
+            imageY * scale;
     }
-);
 
 
-window.addEventListener(
-    "mouseup",
-    () => {
-
-        dragging = false;
-
-        viewport.classList.remove("dragging");
-    }
-);
-
-
-/* --------------------------------
-   Телефон / планшет
--------------------------------- */
-
-let touchStartX = 0;
-let touchStartY = 0;
-
-let touchStartPanX = 0;
-let touchStartPanY = 0;
-
-let pinchStartDistance = 0;
-let pinchStartScale = 1;
-
-
-function distance(a, b) {
-
-    const dx = a.clientX - b.clientX;
-    const dy = a.clientY - b.clientY;
-
-    return Math.sqrt(
-        dx * dx + dy * dy
-    );
+    update();
 }
 
 
-viewport.addEventListener(
-    "touchstart",
-    (event) => {
+/* =====================================================
+   КНОПКА +
+   ===================================================== */
 
-        if (event.touches.length === 1) {
+plus.addEventListener("click", () => {
 
-            const t = event.touches[0];
+    changeZoom(
+        Math.max(scale * 0.25, 0.02),
+        viewer.clientWidth / 2,
+        viewer.clientHeight / 2
+    );
 
-            touchStartX = t.clientX;
-            touchStartY = t.clientY;
-
-            touchStartPanX = x;
-            touchStartPanY = y;
-        }
-
-        if (event.touches.length === 2) {
-
-            pinchStartDistance =
-                distance(
-                    event.touches[0],
-                    event.touches[1]
-                );
-
-            pinchStartScale = scale;
-        }
-
-    },
-    { passive: false }
-);
+});
 
 
-viewport.addEventListener(
-    "touchmove",
-    (event) => {
+/* =====================================================
+   КНОПКА -
+   ===================================================== */
 
-        event.preventDefault();
+minus.addEventListener("click", () => {
 
-        if (event.touches.length === 1) {
+    changeZoom(
+        -Math.max(scale * 0.25, 0.02),
+        viewer.clientWidth / 2,
+        viewer.clientHeight / 2
+    );
 
-            const t =
-                event.touches[0];
-
-            x =
-                touchStartPanX +
-                (t.clientX - touchStartX);
-
-            y =
-                touchStartPanY +
-                (t.clientY - touchStartY);
-
-            updateTransform();
-        }
-
-        if (event.touches.length === 2) {
-
-            const currentDistance =
-                distance(
-                    event.touches[0],
-                    event.touches[1]
-                );
-
-            if (!pinchStartDistance) return;
-
-            const factor =
-                currentDistance /
-                pinchStartDistance;
-
-            const newScale =
-                pinchStartScale * factor;
-
-            const rect =
-                viewport.getBoundingClientRect();
-
-            const cx =
-                (
-                    event.touches[0].clientX +
-                    event.touches[1].clientX
-                ) / 2 - rect.left;
-
-            const cy =
-                (
-                    event.touches[0].clientY +
-                    event.touches[1].clientY
-                ) / 2 - rect.top;
-
-            zoomAtPoint(
-                newScale,
-                cx,
-                cy
-            );
-        }
-
-    },
-    { passive: false }
-);
+});
 
 
-/* --------------------------------
-   Полный экран
--------------------------------- */
+/* =====================================================
+   КНОПКА "ПОКАЗАТЬ ВСЁ"
+   ===================================================== */
 
-fullscreenBtn.addEventListener(
-    "click",
-    async () => {
+fit.addEventListener("click", () => {
 
-        try {
+    fitTree();
 
-            if (!document.fullscreenElement) {
-
-                await document.documentElement.requestFullscreen();
-
-            } else {
-
-                await document.exitFullscreen();
-
-            }
-
-        } catch (error) {
-
-            console.log(
-                "Полноэкранный режим недоступен"
-            );
-        }
-    }
-);
+});
 
 
-/* --------------------------------
-   После загрузки изображения
--------------------------------- */
+/* =====================================================
+   КОЛЕСО МЫШИ
+   ===================================================== */
 
-tree.addEventListener(
-    "load",
-    () => {
+viewer.addEventListener("wheel", (event) => {
 
-        setInitialPosition();
+    event.preventDefault();
+
+
+    const rect =
+        viewer.getBoundingClientRect();
+
+
+    const mouseX =
+        event.clientX - rect.left;
+
+    const mouseY =
+        event.clientY - rect.top;
+
+
+    let amount;
+
+
+    if (event.deltaY < 0) {
+
+        amount =
+            Math.max(scale * 0.18, 0.01);
+
+    } else {
+
+        amount =
+            -Math.max(scale * 0.18, 0.01);
 
     }
-);
 
 
-/* --------------------------------
-   При изменении размера окна
--------------------------------- */
+    changeZoom(
+        amount,
+        mouseX,
+        mouseY
+    );
 
-window.addEventListener(
-    "resize",
-    () => {
 
-        /*
-           При обычном изменении окна
-           сохраняем текущий вид.
-        */
+    hint.style.opacity = "0";
 
-        updateTransform();
+}, { passive: false });
+
+
+/* =====================================================
+   НАЧАЛО ПЕРЕТАСКИВАНИЯ
+   ===================================================== */
+
+viewer.addEventListener("pointerdown", (event) => {
+
+    dragging = true;
+
+    viewer.classList.add("dragging");
+
+    startMouseX = event.clientX;
+    startMouseY = event.clientY;
+
+    startX = x;
+    startY = y;
+
+    viewer.setPointerCapture(event.pointerId);
+
+    hint.style.opacity = "0";
+
+});
+
+
+/* =====================================================
+   ПЕРЕТАСКИВАНИЕ
+   ===================================================== */
+
+viewer.addEventListener("pointermove", (event) => {
+
+    if (!dragging) {
+        return;
     }
-);
 
 
-/* --------------------------------
-   Запуск
--------------------------------- */
+    const dx =
+        event.clientX - startMouseX;
+
+    const dy =
+        event.clientY - startMouseY;
+
+
+    x = startX + dx;
+    y = startY + dy;
+
+
+    update();
+
+});
+
+
+/* =====================================================
+   КОНЕЦ ПЕРЕТАСКИВАНИЯ
+   ===================================================== */
+
+viewer.addEventListener("pointerup", (event) => {
+
+    dragging = false;
+
+    viewer.classList.remove("dragging");
+
+    try {
+        viewer.releasePointerCapture(event.pointerId);
+    } catch (e) {}
+
+});
+
+
+viewer.addEventListener("pointercancel", () => {
+
+    dragging = false;
+
+    viewer.classList.remove("dragging");
+
+});
+
+
+/* =====================================================
+   ПОЛНЫЙ ЭКРАН
+   ===================================================== */
+
+fullscreen.addEventListener("click", async () => {
+
+    try {
+
+        if (!document.fullscreenElement) {
+
+            await document.documentElement.requestFullscreen();
+
+        } else {
+
+            await document.exitFullscreen();
+
+        }
+
+    } catch (e) {
+
+        console.log(e);
+
+    }
+
+});
+
+
+/* =====================================================
+   ПЕРЕСЧЁТ ПОСЛЕ ИЗМЕНЕНИЯ РАЗМЕРА ОКНА
+   ===================================================== */
+
+window.addEventListener("resize", () => {
+
+    /*
+       Не сбрасываем положение,
+       если пользователь уже двигает дерево.
+    */
+
+    update();
+
+});
+
+
+/* =====================================================
+   КОГДА КАРТИНКА ЗАГРУЗИЛАСЬ
+   ===================================================== */
+
+tree.addEventListener("load", () => {
+
+    /*
+       Сразу ставим красивую
+       стартовую позицию.
+    */
+
+    fitTree();
+
+});
+
+
+/* =====================================================
+   ЗАПУСК
+   ===================================================== */
 
 if (tree.complete) {
 
-    setInitialPosition();
+    fitTree();
+
+} else {
+
+    update();
 
 }
 
